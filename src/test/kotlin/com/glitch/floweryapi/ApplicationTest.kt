@@ -1,4 +1,4 @@
-package example.com
+package com.glitch.floweryapi
 
 import example.com.plugins.*
 import io.ktor.client.request.*
