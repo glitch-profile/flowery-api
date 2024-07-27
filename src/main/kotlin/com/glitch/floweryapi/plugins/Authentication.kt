@@ -9,7 +9,7 @@ import io.ktor.server.response.*
 fun Application.configureAuthentication() {
 
     install(Authentication) {
-        session<AuthSession>("guest") {
+        session<AuthSession> {
             validate { session ->
                 if (session.personId.isNotEmpty()) session else null
             }
@@ -27,7 +27,7 @@ fun Application.configureAuthentication() {
         }
         session<AuthSession>("admin") {
             validate { session ->
-                if (session.personId.isNotEmpty()) session else null
+                if (session.personId.isNotEmpty()) session else null //TODO
             }
             challenge {
                 call.respond(HttpStatusCode.Unauthorized)
