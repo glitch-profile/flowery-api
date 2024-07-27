@@ -1,9 +1,6 @@
 package com.glitch.floweryapi
 
-import com.glitch.floweryapi.plugins.configureAuthentication
-import com.glitch.floweryapi.plugins.configureRouting
-import com.glitch.floweryapi.plugins.configureSessions
-import com.glitch.floweryapi.plugins.configureSerialization
+import com.glitch.floweryapi.plugins.*
 import io.ktor.server.application.*
 
 fun main(args: Array<String>) {
@@ -11,6 +8,7 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+    configureKoin()
     configureSerialization()
     configureSessions()
     configureAuthentication()
