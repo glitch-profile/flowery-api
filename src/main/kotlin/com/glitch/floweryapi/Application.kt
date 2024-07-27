@@ -3,7 +3,6 @@ package com.glitch.floweryapi
 import com.glitch.floweryapi.plugins.configureRouting
 import com.glitch.floweryapi.plugins.configureSecurity
 import com.glitch.floweryapi.plugins.configureSerialization
-import com.glitch.floweryapi.plugins.configureSockets
 import io.ktor.server.application.*
 
 fun main(args: Array<String>) {
@@ -11,7 +10,6 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
-    configureSockets()
     configureSerialization()
     configureSecurity()
     configureRouting()
