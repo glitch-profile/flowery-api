@@ -6,7 +6,7 @@ import io.ktor.server.sessions.*
 import io.ktor.util.*
 import java.io.File
 
-fun Application.configureSecurity() {
+fun Application.configureSessions() {
     val auth_secret_key = environment.config.property("security.auth_sign").getString()
 
     install(Sessions) {
