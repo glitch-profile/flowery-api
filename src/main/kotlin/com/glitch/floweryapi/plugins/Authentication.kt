@@ -19,7 +19,7 @@ fun Application.configureAuthentication() {
         }
         session<AuthSession>("client") {
             validate { session ->
-                if (session.personId.isNotEmpty()) session else null //TODO
+                if (session.clientId?.isNotEmpty() == true && session.isRegistered) session else null
             }
             challenge {
                 call.respond(HttpStatusCode.Unauthorized)
@@ -27,7 +27,7 @@ fun Application.configureAuthentication() {
         }
         session<AuthSession>("admin") {
             validate { session ->
-                if (session.personId.isNotEmpty()) session else null //TODO
+                if (session.employeeId?.isNotEmpty() == true && session.isRegistered) session else null
             }
             challenge {
                 call.respond(HttpStatusCode.Unauthorized)

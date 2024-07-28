@@ -1,4 +1,4 @@
-package com.glitch.floweryapi.data.model
+package com.glitch.floweryapi.data.model.goods
 
 import kotlinx.serialization.Serializable
 
