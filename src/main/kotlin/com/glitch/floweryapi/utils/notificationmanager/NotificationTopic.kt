@@ -2,7 +2,6 @@ package com.glitch.floweryapi.utils.notificationmanager
 
 import com.glitch.floweryapi.utils.EmployeeRoles
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 enum class NotificationsTopicsCodes {
     NEW_CHATS,

@@ -2,6 +2,7 @@ package com.glitch.floweryapi.routes
 
 import com.glitch.floweryapi.data.model.ApiResponse
 import com.glitch.floweryapi.session.AuthSession
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
@@ -9,7 +10,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import java.io.File
 
-private const val PATH = "/apiV1"
+private const val PATH = "/apiV1/auth"
 
 fun Routing.authorizationRoutes() {
 
@@ -59,6 +60,7 @@ fun Routing.authorizationRoutes() {
         }
 
         get("$PATH/test") {
+            call.respond(HttpStatusCode.Forbidden)
             val sessionStorage = directorySessionStorage(File("build/.sessions"))
             val sessionId = call.request.queryParameters["session_id"]
             println(sessionId)
