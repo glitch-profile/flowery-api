@@ -15,7 +15,7 @@ private const val PATH = "/apiV1/auth"
 fun Routing.authorizationRoutes() {
 
     post("$PATH/login-admin") {
-        call.sessions.set(AuthSession("12345"))
+        call.sessions.set(AuthSession(false, "12345"))
     }
 
     post("$PATH/login-client") {
