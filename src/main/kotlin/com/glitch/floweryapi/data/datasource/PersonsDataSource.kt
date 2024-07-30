@@ -6,6 +6,8 @@ import com.glitch.floweryapi.utils.notificationmanager.NotificationsTopicsCodes
 
 interface PersonsDataSource {
 
+    suspend fun addPerson(firstName: String, lastName: String): PersonModel
+
     suspend fun getPersonById(personId: String): PersonModel
 
     suspend fun getPersonsByIds(personIds: List<String>): List<PersonModel>

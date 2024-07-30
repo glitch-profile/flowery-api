@@ -1,6 +1,7 @@
 package com.glitch.floweryapi.data.datasourceimpl.users
 
 import com.glitch.floweryapi.data.datasource.PersonsDataSource
+import com.glitch.floweryapi.data.datasourceimpl.users.exceptions.UserNotFoundException
 import com.glitch.floweryapi.data.model.users.PersonModel
 import com.glitch.floweryapi.utils.notificationmanager.NotificationTopic
 import com.glitch.floweryapi.utils.notificationmanager.NotificationsTopicsCodes
@@ -18,6 +19,16 @@ class PersonsDataSourceImpl(
 
     private val persons = db.getCollection<PersonModel>("Persons")
     private val sessionStorage = directorySessionStorage(File("build/.sessions"))
+//    private val sessionStorage = directorySessionStorage(File("${Paths.get("")}/sessions"))
+
+    override suspend fun addPerson(firstName: String, lastName: String): PersonModel {
+        val personModel = PersonModel(
+            firstName = firstName,
+            lastName = lastName
+        )
+        persons.insertOne(personModel)
+        return personModel
+    }
 
     override suspend fun getPersonById(personId: String): PersonModel {
         val filter = Filters.eq("_id", personId)
