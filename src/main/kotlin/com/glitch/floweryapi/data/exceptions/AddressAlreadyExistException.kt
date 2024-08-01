@@ -1,3 +1,3 @@
-package com.glitch.floweryapi.data.datasourceimpl.users.exceptions
+package com.glitch.floweryapi.data.exceptions
 
 class AddressAlreadyExistException(): Throwable("An address with these coordinates already exists.")

@@ -1,7 +1,7 @@
 package com.glitch.floweryapi.data.datasourceimpl.users
 
 import com.glitch.floweryapi.data.datasource.ClientsDataSource
-import com.glitch.floweryapi.data.datasourceimpl.users.exceptions.*
+import com.glitch.floweryapi.data.exceptions.*
 import com.glitch.floweryapi.data.model.addresses.AddressModel
 import com.glitch.floweryapi.data.model.orders.ShoppingCartItem
 import com.glitch.floweryapi.data.model.users.ClientModel
@@ -43,7 +43,7 @@ class ClientsDataSourceImpl(
 
     override suspend fun addItemToFavourites(clientId: String, itemId: String): Boolean {
         val client = getClientById(clientId)
-        if (client.favouritesItems.contains(itemId)) throw FavouriteItemAlreadyExistsException()
+        if (client.favouritesItems.contains(itemId)) throw ItemAlreadyExistsException()
         val filter = Filters.eq("_id", clientId)
         val update = Updates.addToSet(ClientModel::favouritesItems.name, itemId)
         val result = clients.updateOne(filter, update)
@@ -56,13 +56,13 @@ class ClientsDataSourceImpl(
         val update = Updates.pull(ClientModel::favouritesItems.name, itemId)
         val result = clients.updateOne(filter, update)
         if (result.matchedCount == 0L) throw UserNotFoundException()
-        else if (result.modifiedCount == 0L) throw NoFavouriteItemFoundException()
+        else if (result.modifiedCount == 0L) throw ItemNotFoundException()
         else return true
     }
 
     override suspend fun addItemToShoppingCart(clientId: String, itemId: String): Boolean {
         val client = getClientById(clientId)
-        if (client.shoppingCartItems.any { it.itemId == itemId }) throw ShoppingCartItemAlreadyExistsException()
+        if (client.shoppingCartItems.any { it.itemId == itemId }) throw ItemAlreadyExistsException()
         val item = ShoppingCartItem(itemId = itemId)
         val filter = Filters.eq("_id", clientId)
         val update = Updates.addToSet(ClientModel::shoppingCartItems.name, item)
@@ -91,7 +91,7 @@ class ClientsDataSourceImpl(
             val result = clients.updateOne(filter, update)
             if (result.matchedCount == 0L) throw UserNotFoundException()
             else result.modifiedCount != 0L
-        } else throw NoShoppingCartItemFoundException()
+        } else throw ItemNotFoundException()
     }
 
     override suspend fun updateShoppingCartItemQuantity(clientId: String, itemId: String, newQuantity: Int): Boolean {
@@ -116,7 +116,7 @@ class ClientsDataSourceImpl(
             val result = clients.updateOne(filter, update)
             if (result.matchedCount == 0L) throw UserNotFoundException()
             else return result.modifiedCount != 0L
-        } else throw NoShoppingCartItemFoundException()
+        } else throw ItemNotFoundException()
     }
 
     override suspend fun addDeliveryAddress(
