@@ -1,4 +1,4 @@
-package com.glitch.floweryapi.domain.utils
+package com.glitch.floweryapi.domain.utils.encryptor
 
 import io.ktor.server.config.*
 import io.ktor.util.*
@@ -15,7 +15,7 @@ object AESEncryptor {
     private val salt = ApplicationConfig(null).tryGetString("security.encrypt_salt")
     private val iv = ApplicationConfig(null).tryGetString("security.encrypt_iv")
 
-    fun encrypt(normalString: String): String? {
+    fun encrypt(normalString: String): String {
         return try {
             val secretKey = SecretKeySpec(secret!!.toByteArray(), "AES")
             val ivParameterSpec = IvParameterSpec(iv!!.toByteArray())
@@ -28,13 +28,11 @@ object AESEncryptor {
             val encryptedString = cipher.doFinal(plainText)
             encryptedString.encodeBase64()
         } catch (e: Exception) {
-            println("$TAG - unable to encrypt string")
-            e.printStackTrace()
-            null
+            throw EncryptionException()
         }
     }
 
-    fun decrypt(encryptedString: String): String? {
+    fun decrypt(encryptedString: String): String {
         return try {
             val secretKey = SecretKeySpec(secret!!.toByteArray(), "AES")
             val ivParameterSpec = IvParameterSpec(iv!!.toByteArray())
@@ -47,9 +45,7 @@ object AESEncryptor {
             val decryptedString = cipher.doFinal(textToDecrypt)
             decryptedString.decodeToString()
         } catch (e: Exception) {
-            println("$TAG - unable to decrypt string")
-            e.printStackTrace()
-            null
+            throw EncryptionException()
         }
     }
 

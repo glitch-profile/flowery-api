@@ -3,6 +3,7 @@ package com.glitch.floweryapi.data.datasourceimpl.users
 import com.glitch.floweryapi.data.datasource.EmployeesDataSource
 import com.glitch.floweryapi.data.exceptions.UserNotFoundException
 import com.glitch.floweryapi.data.model.users.EmployeeModel
+import com.glitch.floweryapi.domain.utils.encryptor.AESEncryptor
 import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
@@ -23,10 +24,12 @@ class EmployeesDataSourceImpl(
         roles: List<EmployeeRoles>
     ): EmployeeModel {
         val convertedRoles = roles.map { it.name }
+        val encryptedLogin = AESEncryptor.encrypt(login)
+        val encryptedPassword = AESEncryptor.encrypt(password)
         val employee = EmployeeModel(
             personId = personId,
-            login = login,
-            password = password,
+            login = encryptedLogin,
+            password = encryptedPassword,
             roles = convertedRoles
         )
         employees.insertOne(employee)
@@ -44,9 +47,11 @@ class EmployeesDataSourceImpl(
     }
 
     override suspend fun login(login: String, password: String): EmployeeModel {
+        val encryptedLogin = AESEncryptor.encrypt(login)
+        val encryptedPassword = AESEncryptor.encrypt(password)
         val filter = Filters.and(
-            Filters.eq(EmployeeModel::login.name, login),
-            Filters.eq(EmployeeModel::password.name, password)
+            Filters.eq(EmployeeModel::login.name, encryptedLogin),
+            Filters.eq(EmployeeModel::password.name, encryptedPassword)
         )
         return employees.find(filter).singleOrNull() ?: throw UserNotFoundException()
     }
