@@ -5,8 +5,8 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
 private const val TAG = "PHONE VERIFICATION MANAGER"
-//private const val CODE_CLEAR_DELAY: Long = 300_000L // 5 minutes
-private const val CODE_CLEAR_DELAY: Long = 10_000L // 10 seconds
+private const val CODE_CLEAR_DELAY: Long = 300_000L // 5 minutes
+//private const val CODE_CLEAR_DELAY: Long = 10_000L // 10 seconds
 
 class PhoneVerificationManagerImpl(): PhoneVerificationManager {
 
@@ -25,8 +25,8 @@ class PhoneVerificationManagerImpl(): PhoneVerificationManager {
         verificationCodes.remove(phone)
         clearCodesJobs.remove(phone)
         println("$TAG - code deleted")
-        println("$TAG - codes - ${verificationCodes.keys()}")
-        println("$TAG - jobs - ${clearCodesJobs.keys()}")
+        println("$TAG - codes - ${verificationCodes.keys().toList()}")
+        println("$TAG - jobs - ${clearCodesJobs.keys().toList()}")
     }
 
     override fun generateVerificationCode(phone: String): String {

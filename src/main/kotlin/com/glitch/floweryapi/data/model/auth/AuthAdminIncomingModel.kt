@@ -3,7 +3,7 @@ package com.glitch.floweryapi.data.model.auth
 import kotlinx.serialization.Serializable
 
 @Serializable
-class AuthPasswordIncomingModel(
+class AuthAdminIncomingModel(
     val username: String,
     val password: String
 )
