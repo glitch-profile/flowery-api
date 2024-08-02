@@ -1,7 +1,7 @@
 package com.glitch.floweryapi.data.datasource
 
 import com.glitch.floweryapi.data.model.users.EmployeeModel
-import com.glitch.floweryapi.utils.EmployeeRoles
+import com.glitch.floweryapi.domain.utils.EmployeeRoles
 
 interface EmployeesDataSource {
 

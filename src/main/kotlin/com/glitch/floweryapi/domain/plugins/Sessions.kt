@@ -1,6 +1,6 @@
-package com.glitch.floweryapi.plugins
+package com.glitch.floweryapi.domain.plugins
 
-import com.glitch.floweryapi.session.AuthSession
+import com.glitch.floweryapi.domain.session.AuthSession
 import io.ktor.server.application.*
 import io.ktor.server.sessions.*
 import io.ktor.util.*

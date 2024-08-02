@@ -1,6 +1,6 @@
-package com.glitch.floweryapi.utils.notificationmanager
+package com.glitch.floweryapi.domain.utils.notificationmanager
 
-import com.glitch.floweryapi.utils.EmployeeRoles
+import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import kotlinx.serialization.Serializable
 
 enum class NotificationsTopicsCodes {

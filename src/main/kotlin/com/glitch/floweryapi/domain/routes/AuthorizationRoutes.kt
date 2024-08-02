@@ -1,7 +1,7 @@
-package com.glitch.floweryapi.routes
+package com.glitch.floweryapi.domain.routes
 
 import com.glitch.floweryapi.data.model.ApiResponse
-import com.glitch.floweryapi.session.AuthSession
+import com.glitch.floweryapi.domain.session.AuthSession
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

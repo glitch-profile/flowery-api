@@ -1,4 +1,4 @@
-package com.glitch.floweryapi.plugins
+package com.glitch.floweryapi.domain.plugins
 
 import com.glitch.floweryapi.di.dataSourceModule
 import com.glitch.floweryapi.di.databaseModule

@@ -1,6 +1,6 @@
 package com.glitch.floweryapi.data.model.users
 
-import com.glitch.floweryapi.utils.EmployeeRoles
+import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import kotlinx.serialization.Serializable
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.types.ObjectId

@@ -3,7 +3,7 @@ package com.glitch.floweryapi.data.datasourceimpl.users
 import com.glitch.floweryapi.data.datasource.EmployeesDataSource
 import com.glitch.floweryapi.data.exceptions.UserNotFoundException
 import com.glitch.floweryapi.data.model.users.EmployeeModel
-import com.glitch.floweryapi.utils.EmployeeRoles
+import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase

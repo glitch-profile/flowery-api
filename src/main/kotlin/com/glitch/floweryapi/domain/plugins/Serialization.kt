@@ -1,4 +1,4 @@
-package com.glitch.floweryapi.plugins
+package com.glitch.floweryapi.domain.plugins
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*

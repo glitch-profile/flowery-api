@@ -1,8 +1,8 @@
-package com.glitch.floweryapi.plugins
+package com.glitch.floweryapi.domain.plugins
 
 import com.glitch.floweryapi.data.datasource.ClientsDataSource
 import com.glitch.floweryapi.data.datasource.PersonsDataSource
-import com.glitch.floweryapi.routes.authorizationRoutes
+import com.glitch.floweryapi.domain.routes.authorizationRoutes
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject

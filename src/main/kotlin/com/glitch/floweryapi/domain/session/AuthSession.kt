@@ -1,6 +1,6 @@
-package com.glitch.floweryapi.session
+package com.glitch.floweryapi.domain.session
 
-import com.glitch.floweryapi.utils.EmployeeRoles
+import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import io.ktor.server.auth.*
 
 data class AuthSession(
