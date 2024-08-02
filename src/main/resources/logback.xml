@@ -7,6 +7,6 @@
     <root level="trace">
         <appender-ref ref="STDOUT"/>
     </root>
-    <logger name="org.eclipse.jetty" level="ERROR"/>
     <logger name="io.netty" level="ERROR"/>
+    <logger name="org.mongodb.driver" level="ERROR"/>
 </configuration>
