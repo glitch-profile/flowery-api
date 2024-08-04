@@ -1,21 +1,30 @@
 package com.glitch.floweryapi.data.datasourceimpl.users
 
 import com.glitch.floweryapi.data.datasource.EmployeesDataSource
+import com.glitch.floweryapi.data.datasource.PersonsDataSource
 import com.glitch.floweryapi.data.exceptions.UserNotFoundException
 import com.glitch.floweryapi.data.model.users.EmployeeModel
+import com.glitch.floweryapi.domain.session.AuthSession
 import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import com.glitch.floweryapi.domain.utils.encryptor.AESEncryptor
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.FindOneAndUpdateOptions
+import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
+import io.ktor.server.sessions.*
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
+import java.io.File
 
 class EmployeesDataSourceImpl(
-    db: MongoDatabase
+    db: MongoDatabase,
+    private val persons: PersonsDataSource
 ): EmployeesDataSource {
 
     private val employees = db.getCollection<EmployeeModel>("Employees")
+    private val sessionStorage = directorySessionStorage(File("build/.sessions"))
+//    private val sessionStorage = directorySessionStorage(File("${Paths.get("")}/sessions"))
 
     override suspend fun addEmployee(
         personId: String,
@@ -68,8 +77,20 @@ class EmployeesDataSourceImpl(
         val convertedRoles = newRoles.map { it.name }
         val filter = Filters.eq("_id", employeeId)
         val update = Updates.set(EmployeeModel::roles.name, convertedRoles)
-        val result = employees.updateOne(filter, update)
-        if (result.matchedCount == 0L) throw UserNotFoundException()
-        else return result.modifiedCount != 0L
+        val options = FindOneAndUpdateOptions()
+            .returnDocument(ReturnDocument.AFTER)
+        val result = employees.findOneAndUpdate(filter, update, options)
+        if (result == null) throw UserNotFoundException()
+        else {
+            val sessionSerializer = defaultSessionSerializer<AuthSession>()
+            val associatedPerson = persons.getPersonById(result.personId)
+            associatedPerson.activeSessions.forEach {
+                val sessionString = sessionStorage.read(it)
+                val sessionData = sessionSerializer.deserialize(sessionString).copy(employeeRoles = newRoles)
+                val serializedSessionString = sessionSerializer.serialize(sessionData)
+                sessionStorage.write(id = it, value = serializedSessionString)
+            }
+            return true
+        }
     }
 }
