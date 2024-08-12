@@ -7,6 +7,7 @@ import com.glitch.floweryapi.data.exceptions.UserNotFoundException
 import com.glitch.floweryapi.data.model.ApiResponse
 import com.glitch.floweryapi.data.model.auth.AuthAdminIncomingModel
 import com.glitch.floweryapi.data.model.auth.AuthPhoneIncomingModel
+import com.glitch.floweryapi.data.model.auth.AuthResponseModel
 import com.glitch.floweryapi.domain.session.AuthSession
 import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneNotFoundException
@@ -144,7 +145,12 @@ fun Routing.authorizationRoutes(
                 ApiResponse(
                     status = true,
                     message = "session registered.",
-                    data = Unit
+                    data = AuthResponseModel(
+                        personId = currentSession.personId,
+                        clientId = currentSession.clientId,
+                        employeeId = currentSession.employeeId,
+                        employeeRoles = currentSession.employeeRoles.map { it.name }
+                    )
                 )
             )
         }
