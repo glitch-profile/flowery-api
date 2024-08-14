@@ -25,7 +25,7 @@ fun Application.configureAuthentication() {
                 call.respond(HttpStatusCode.Unauthorized)
             }
         }
-        session<AuthSession>("admin") {
+        session<AuthSession>("employee") {
             validate { session ->
                 if (session.employeeId?.isNotEmpty() == true && session.isRegistered) session else null
             }

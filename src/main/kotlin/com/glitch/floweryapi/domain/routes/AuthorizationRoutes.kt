@@ -19,6 +19,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import kotlinx.coroutines.launch
 
 private const val PATH = "/apiV1/auth"
 
@@ -39,8 +40,7 @@ fun Routing.authorizationRoutes(
             call.sessions.set(
                 AuthSession(
                     personId = employee.personId,
-                    employeeId = employee.id,
-                    employeeRoles = employee.roles.map { EmployeeRoles.valueOf(it) }
+                    employeeId = employee.id
                 )
             )
             call.respond(
@@ -121,8 +121,39 @@ fun Routing.authorizationRoutes(
         }
     }
 
-    post("$PATH/login-guest") {
-        call.sessions.set(AuthSession(personId = "0"))
+//    post("$PATH/login-guest") {
+//        call.sessions.set(AuthSession(personId = "0"))
+//    }
+
+    get("$PATH/check-session") {
+        val currentSession = call.sessions.get<AuthSession>()
+        if (currentSession == null) {
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    message = "session not found or expired."
+                )
+            )
+            return@get
+        }
+        if (!currentSession.isRegistered) {
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    message = "session not registered."
+                )
+            )
+            return@get
+        }
+        call.respond(
+            ApiResponse(
+                data = Unit,
+                status = true,
+                message = "session checked."
+            )
+        )
     }
 
     authenticate {
@@ -139,8 +170,15 @@ fun Routing.authorizationRoutes(
                 return@post
             }
             val sessionId = call.sessionId<AuthSession>()!!
-            persons.addActiveSessionId(currentSession.personId, sessionId)
-            call.sessions.set(currentSession.copy(isRegistered = true))
+            launch { persons.addActiveSessionId(currentSession.personId, sessionId) }
+            var newSessionData = currentSession.copy(isRegistered = true)
+            if (currentSession.employeeId != null) {
+                try {
+                    val employee = employees.getEmployeeById(currentSession.employeeId)
+                    newSessionData = newSessionData.copy(employeeRoles = employee.roles.map { EmployeeRoles.valueOf(it) })
+                } catch (_: UserNotFoundException) {  }
+            }
+            call.sessions.set(newSessionData)
             call.respond(
                 ApiResponse(
                     status = true,
@@ -158,7 +196,7 @@ fun Routing.authorizationRoutes(
         post("$PATH/logout") {
             val currentSession = call.sessions.get<AuthSession>()!!
             val currentSessionId = call.sessionId<AuthSession>()!!
-            if (currentSession.personId != "0") {
+            if (currentSession.clientId != null || currentSession.employeeId != null) {
                 persons.removeActiveSessionId(currentSession.personId, currentSessionId)
             }
             call.sessions.clear<AuthSession>()
@@ -172,6 +210,25 @@ fun Routing.authorizationRoutes(
         }
     }
 
+    authenticate("client", "employee") {
+
+        get("$PATH/update-auth-info") {
+            val currentSession = call.sessions.get<AuthSession>()!!
+            call.respond(
+                ApiResponse(
+                    data = AuthResponseModel(
+                        personId = currentSession.personId,
+                        clientId = currentSession.clientId,
+                        employeeId = currentSession.employeeId,
+                        employeeRoles = currentSession.employeeRoles.map { it.name }
+                    ),
+                    status = true,
+                    message = "saved user info retrieved."
+                )
+            )
+        }
+
+    }
 //    get("$PATH/test") {
 //        val sessionId = generateSessionId()
 //        call.sessions.set(
