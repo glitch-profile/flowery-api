@@ -170,14 +170,16 @@ fun Routing.authorizationRoutes(
                 )
             )
         }
-
-//        get("$PATH/test") {
-//            call.respond(HttpStatusCode.Forbidden)
-//            val sessionStorage = directorySessionStorage(File("build/.sessions"))
-//            val sessionId = call.request.queryParameters["session_id"]
-//            println(sessionId)
-//            sessionStorage.invalidate(sessionId!!)
-//        }
     }
+
+//    get("$PATH/test") {
+//        val sessionId = generateSessionId()
+//        call.sessions.set(
+//            value = AuthSession(
+//                personId = "0"
+//            )
+//        )
+//        call.respondText(sessionId)
+//    }
 
 }
