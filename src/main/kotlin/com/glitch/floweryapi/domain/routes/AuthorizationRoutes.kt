@@ -30,7 +30,7 @@ fun Routing.authorizationRoutes(
     phoneVerificationManager: PhoneVerificationManager
 ) {
 
-    post("$PATH/login-admin") {
+    post("$PATH/login-password") {
         val loginInfo = call.receiveNullable<AuthAdminIncomingModel>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
