@@ -205,14 +205,15 @@ fun Routing.authorizationRoutes(
 
         post("$PATH/session-verification") {
             val currentSession = call.sessions.get<AuthSession>() ?: kotlin.run {
-                call.respond(
-                    ApiResponse(
-                        status = false,
-                        message = "unable to get session. Please login again.",
-                        messageCode = ApiResponseMessageCode.SESSION_NOT_FOUND,
-                        data = Unit
-                    )
-                )
+//                call.respond(
+//                    ApiResponse(
+//                        status = false,
+//                        message = "unable to get session. Please login again.",
+//                        messageCode = ApiResponseMessageCode.SESSION_NOT_FOUND,
+//                        data = Unit
+//                    )
+//                )
+                call.respond(HttpStatusCode.Unauthorized)
                 return@post
             }
             val sessionId = call.sessionId<AuthSession>()!!
