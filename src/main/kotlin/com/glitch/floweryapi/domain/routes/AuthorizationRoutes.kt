@@ -9,6 +9,7 @@ import com.glitch.floweryapi.data.model.auth.AuthAdminIncomingModel
 import com.glitch.floweryapi.data.model.auth.AuthPhoneIncomingModel
 import com.glitch.floweryapi.data.model.auth.AuthResponseModel
 import com.glitch.floweryapi.domain.session.AuthSession
+import com.glitch.floweryapi.domain.utils.ApiResponseMessageCode
 import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneNotFoundException
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneVerificationManager
@@ -47,11 +48,17 @@ fun Routing.authorizationRoutes(
                 ApiResponse(
                     data = Unit,
                     status = true,
+                    messageCode = ApiResponseMessageCode.OK,
                     message = "logged in. Please register the session."
                 )
             )
         } catch (e: UserNotFoundException) {
-            call.respond(HttpStatusCode.NotFound)
+            ApiResponse(
+                data = Unit,
+                status = false,
+                messageCode = ApiResponseMessageCode.AUTH_DATA_INCORRECT,
+                message = "user with that login and password is not found."
+            )
         }
     }
 
@@ -65,7 +72,8 @@ fun Routing.authorizationRoutes(
                 ApiResponse(
                     data = Unit,
                     status = false,
-                    message = "incorrect phone number"
+                    messageCode = ApiResponseMessageCode.PHONE_INCORRECT,
+                    message = "incorrect phone number."
                 )
             )
             return@post
@@ -77,11 +85,19 @@ fun Routing.authorizationRoutes(
                 ApiResponse(
                     data = Unit,
                     status = true,
+                    messageCode = ApiResponseMessageCode.OK,
                     message = "user found. Enter verification code."
                 )
             )
         } catch (e: UserNotFoundException) {
-            call.respond(HttpStatusCode.NotFound)
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.USER_NOT_FOUND,
+                    message = "user not found."
+                )
+            )
         }
 
     }
@@ -112,6 +128,7 @@ fun Routing.authorizationRoutes(
                     ApiResponse(
                         data = Unit,
                         status = true,
+                        messageCode = ApiResponseMessageCode.OK,
                         message = "logged in. Please register the session."
                     )
                 )
@@ -120,14 +137,29 @@ fun Routing.authorizationRoutes(
                     ApiResponse(
                         data = Unit,
                         status = false,
+                        messageCode = ApiResponseMessageCode.CODE_INCORRECT,
                         message = "this code is incorrect."
                     )
                 )
             }
         } catch (e: UserNotFoundException) {
-            call.respond(HttpStatusCode.NotFound)
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.USER_NOT_FOUND,
+                    message = "user not found."
+                )
+            )
         } catch (e: PhoneNotFoundException) {
-            call.respond(HttpStatusCode.Conflict)
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.PHONE_NOT_FOUND,
+                    message = "phone not found."
+                )
+            )
         }
     }
 
@@ -142,6 +174,7 @@ fun Routing.authorizationRoutes(
                 ApiResponse(
                     data = Unit,
                     status = false,
+                    messageCode = ApiResponseMessageCode.SESSION_NOT_FOUND,
                     message = "session not found or expired."
                 )
             )
@@ -152,6 +185,7 @@ fun Routing.authorizationRoutes(
                 ApiResponse(
                     data = Unit,
                     status = false,
+                    messageCode = ApiResponseMessageCode.SESSION_NOT_REGISTERED,
                     message = "session not registered."
                 )
             )
@@ -161,6 +195,7 @@ fun Routing.authorizationRoutes(
             ApiResponse(
                 data = Unit,
                 status = true,
+                messageCode = ApiResponseMessageCode.OK,
                 message = "session checked."
             )
         )
@@ -174,6 +209,7 @@ fun Routing.authorizationRoutes(
                     ApiResponse(
                         status = false,
                         message = "unable to get session. Please login again.",
+                        messageCode = ApiResponseMessageCode.SESSION_NOT_FOUND,
                         data = Unit
                     )
                 )
@@ -192,6 +228,7 @@ fun Routing.authorizationRoutes(
             call.respond(
                 ApiResponse(
                     status = true,
+                    messageCode = ApiResponseMessageCode.OK,
                     message = "session registered.",
                     data = AuthResponseModel(
                         personId = currentSession.personId,
@@ -207,13 +244,16 @@ fun Routing.authorizationRoutes(
             val currentSession = call.sessions.get<AuthSession>()!!
             val currentSessionId = call.sessionId<AuthSession>()!!
             if (currentSession.clientId != null || currentSession.employeeId != null) {
-                persons.removeActiveSessionId(currentSession.personId, currentSessionId)
+                launch {
+                    persons.removeActiveSessionId(currentSession.personId, currentSessionId)
+                }
             }
             call.sessions.clear<AuthSession>()
             call.respond(
                 ApiResponse(
                     data = Unit,
                     status = true,
+                    messageCode = ApiResponseMessageCode.OK,
                     message = "logged out."
                 )
             )
@@ -233,6 +273,7 @@ fun Routing.authorizationRoutes(
                         employeeRoles = currentSession.employeeRoles.map { it.name }
                     ),
                     status = true,
+                    messageCode = ApiResponseMessageCode.OK,
                     message = "saved user info retrieved."
                 )
             )
