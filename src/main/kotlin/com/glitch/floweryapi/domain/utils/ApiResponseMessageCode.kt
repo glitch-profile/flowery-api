@@ -7,7 +7,6 @@ enum class ApiResponseMessageCode {
     USER_NOT_FOUND,
     //sessions errors
     SESSION_NOT_FOUND,
-    SESSION_NOT_REGISTERED,
     //login errors
     AUTH_DATA_INCORRECT,
     PHONE_NOT_FOUND,

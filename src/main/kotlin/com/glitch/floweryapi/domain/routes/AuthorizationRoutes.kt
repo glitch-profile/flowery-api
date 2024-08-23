@@ -167,39 +167,39 @@ fun Routing.authorizationRoutes(
 //        call.sessions.set(AuthSession(personId = "0"))
 //    }
 
-    get("$PATH/check-session") {
-        val currentSession = call.sessions.get<AuthSession>()
-        if (currentSession == null) {
-            call.respond(
-                ApiResponse(
-                    data = Unit,
-                    status = false,
-                    messageCode = ApiResponseMessageCode.SESSION_NOT_FOUND,
-                    message = "session not found or expired."
-                )
-            )
-            return@get
-        }
-        if (!currentSession.isRegistered) {
-            call.respond(
-                ApiResponse(
-                    data = Unit,
-                    status = false,
-                    messageCode = ApiResponseMessageCode.SESSION_NOT_REGISTERED,
-                    message = "session not registered."
-                )
-            )
-            return@get
-        }
-        call.respond(
-            ApiResponse(
-                data = Unit,
-                status = true,
-                messageCode = ApiResponseMessageCode.OK,
-                message = "session checked."
-            )
-        )
-    }
+//    get("$PATH/check-session") {
+//        val currentSession = call.sessions.get<AuthSession>()
+//        if (currentSession == null) {
+//            call.respond(
+//                ApiResponse(
+//                    data = Unit,
+//                    status = false,
+//                    messageCode = ApiResponseMessageCode.SESSION_NOT_FOUND,
+//                    message = "session not found or expired."
+//                )
+//            )
+//            return@get
+//        }
+//        if (!currentSession.isRegistered) {
+//            call.respond(
+//                ApiResponse(
+//                    data = Unit,
+//                    status = false,
+//                    messageCode = ApiResponseMessageCode.SESSION_NOT_REGISTERED,
+//                    message = "session not registered."
+//                )
+//            )
+//            return@get
+//        }
+//        call.respond(
+//            ApiResponse(
+//                data = Unit,
+//                status = true,
+//                messageCode = ApiResponseMessageCode.OK,
+//                message = "session checked."
+//            )
+//        )
+//    }
 
     authenticate {
 
