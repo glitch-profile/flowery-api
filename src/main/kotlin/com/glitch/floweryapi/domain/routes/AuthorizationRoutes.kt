@@ -55,9 +55,19 @@ fun Routing.authorizationRoutes(
         }
     }
 
-    post("$PATH/login-client") {
+    post("$PATH/login-phone") {
         val loginInfo = call.receiveNullable<AuthPhoneIncomingModel>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
+            return@post
+        }
+        if (!Regex("^\\+7\\d{10}\$").matches(loginInfo.phone)) {
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    message = "incorrect phone number"
+                )
+            )
             return@post
         }
         try {
