@@ -108,6 +108,17 @@ fun Routing.authorizationRoutes(
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
+        if (!Regex("^\\+7\\d{10}\$").matches(loginInfo.phone)) {
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.PHONE_INCORRECT,
+                    message = "Incorrect phone number."
+                )
+            )
+            return@post
+        }
         try {
             val result = phoneVerificationManager.checkVerificationCode(
                 phone = loginInfo.phone,
@@ -163,6 +174,17 @@ fun Routing.authorizationRoutes(
 
     post("$PATH/verify-new-phone-number") {
         val phone = call.receiveText().take(15)
+        if (!Regex("^\\+7\\d{10}\$").matches(phone)) {
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.PHONE_INCORRECT,
+                    message = "Incorrect phone number."
+                )
+            )
+            return@post
+        }
         val isPhoneAvailable = kotlin.runCatching {
             clients.getClientByPhoneNumber(phone)
         }.exceptionOrNull() is UserNotFoundException
@@ -194,6 +216,17 @@ fun Routing.authorizationRoutes(
     post("$PATH/sign-in") {
         val newUserData = call.receiveNullable<AuthNewUserIncomingModel>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
+            return@post
+        }
+        if (!Regex("^\\+7\\d{10}\$").matches(newUserData.phone)) {
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.PHONE_INCORRECT,
+                    message = "Incorrect phone number."
+                )
+            )
             return@post
         }
         val formattedUserData = newUserData.copy(
