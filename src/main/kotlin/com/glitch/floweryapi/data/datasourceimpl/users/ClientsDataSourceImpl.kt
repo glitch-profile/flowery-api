@@ -11,6 +11,7 @@ import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
+import java.lang.IllegalArgumentException
 
 class ClientsDataSourceImpl(
     db: MongoDatabase
@@ -19,6 +20,7 @@ class ClientsDataSourceImpl(
     private val clients = db.getCollection<ClientModel>("Clients")
 
     override suspend fun addClient(personId: String, phoneString: String): ClientModel {
+        if (!Regex("^\\+7\\d{10}\$").matches(phoneString)) throw IllegalArgumentException()
         val encryptedPhone = AESEncryptor.encrypt(phoneString)
         val clientModel = ClientModel(
             personId = personId,

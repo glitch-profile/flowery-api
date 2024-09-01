@@ -63,7 +63,7 @@ fun Routing.authorizationRoutes(
         }
     }
 
-    post("$PATH/login-phone") {
+    post("$PATH/verify-phone-number") {
         val phone = call.receiveText().take(15)
         if (!Regex("^\\+7\\d{10}\$").matches(phone)) {
             call.respond(
@@ -103,7 +103,7 @@ fun Routing.authorizationRoutes(
 
     }
 
-    post("$PATH/client-verification") {
+    post("$PATH/login") {
         val loginInfo = call.receiveNullable<AuthPhoneIncomingModel>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
@@ -161,7 +161,7 @@ fun Routing.authorizationRoutes(
         }
     }
 
-    post("$PATH/register-new-phone") {
+    post("$PATH/verify-new-phone-number") {
         val phone = call.receiveText().take(15)
         val isPhoneAvailable = kotlin.runCatching {
             clients.getClientByPhoneNumber(phone)
@@ -191,7 +191,7 @@ fun Routing.authorizationRoutes(
         )
     }
 
-    post("$PATH/register-new-user") {
+    post("$PATH/sign-in") {
         val newUserData = call.receiveNullable<AuthNewUserIncomingModel>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
@@ -245,6 +245,15 @@ fun Routing.authorizationRoutes(
                     status = false,
                     messageCode = ApiResponseMessageCode.PHONE_NOT_FOUND,
                     message = "Phone not found. Request the code again."
+                )
+            )
+        } catch (e: IllegalArgumentException) {
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.PHONE_INCORRECT,
+                    message = "This phone is incorrect"
                 )
             )
         }
