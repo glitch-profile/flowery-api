@@ -11,7 +11,6 @@ import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.flow.toList
-import java.lang.IllegalArgumentException
 
 class ClientsDataSourceImpl(
     db: MongoDatabase
