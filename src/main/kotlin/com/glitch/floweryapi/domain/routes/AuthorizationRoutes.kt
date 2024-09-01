@@ -6,6 +6,7 @@ import com.glitch.floweryapi.data.datasource.PersonsDataSource
 import com.glitch.floweryapi.data.exceptions.UserNotFoundException
 import com.glitch.floweryapi.data.model.ApiResponse
 import com.glitch.floweryapi.data.model.auth.AuthAdminIncomingModel
+import com.glitch.floweryapi.data.model.auth.AuthNewUserIncomingModel
 import com.glitch.floweryapi.data.model.auth.AuthPhoneIncomingModel
 import com.glitch.floweryapi.data.model.auth.AuthResponseModel
 import com.glitch.floweryapi.domain.session.AuthSession
@@ -13,6 +14,7 @@ import com.glitch.floweryapi.domain.utils.ApiResponseMessageCode
 import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneNotFoundException
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneVerificationManager
+import com.glitch.floweryapi.domain.utils.phoneverification.VerificationCodeDuration
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -49,7 +51,7 @@ fun Routing.authorizationRoutes(
                     data = Unit,
                     status = true,
                     messageCode = ApiResponseMessageCode.OK,
-                    message = "logged in. Please register the session."
+                    message = "Logged in. Please register the session."
                 )
             )
         } catch (e: UserNotFoundException) {
@@ -57,36 +59,33 @@ fun Routing.authorizationRoutes(
                 data = Unit,
                 status = false,
                 messageCode = ApiResponseMessageCode.AUTH_DATA_INCORRECT,
-                message = "user with that login and password is not found."
+                message = "User with that login and password is not found."
             )
         }
     }
 
     post("$PATH/login-phone") {
-        val loginInfo = call.receiveNullable<AuthPhoneIncomingModel>() ?: kotlin.run {
-            call.respond(HttpStatusCode.BadRequest)
-            return@post
-        }
-        if (!Regex("^\\+7\\d{10}\$").matches(loginInfo.phone)) {
+        val phone = call.receiveText().take(15)
+        if (!Regex("^\\+7\\d{10}\$").matches(phone)) {
             call.respond(
                 ApiResponse(
                     data = Unit,
                     status = false,
                     messageCode = ApiResponseMessageCode.PHONE_INCORRECT,
-                    message = "incorrect phone number."
+                    message = "Incorrect phone number."
                 )
             )
             return@post
         }
         try {
-            clients.getClientByPhoneNumber(loginInfo.phone)
-            phoneVerificationManager.generateVerificationCode(loginInfo.phone)
+            clients.getClientByPhoneNumber(phone)
+            phoneVerificationManager.generateVerificationCode(phone)
             call.respond(
                 ApiResponse(
                     data = Unit,
                     status = true,
                     messageCode = ApiResponseMessageCode.OK,
-                    message = "user found. Enter verification code."
+                    message = "User found. Enter verification code."
                 )
             )
         } catch (e: UserNotFoundException) {
@@ -95,7 +94,7 @@ fun Routing.authorizationRoutes(
                     data = Unit,
                     status = false,
                     messageCode = ApiResponseMessageCode.USER_NOT_FOUND,
-                    message = "user not found."
+                    message = "User not found."
                 )
             )
         }
@@ -104,10 +103,6 @@ fun Routing.authorizationRoutes(
 
     post("$PATH/client-verification") {
         val loginInfo = call.receiveNullable<AuthPhoneIncomingModel>() ?: kotlin.run {
-            call.respond(HttpStatusCode.BadRequest)
-            return@post
-        }
-        if (loginInfo.code.isNullOrBlank()) {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
@@ -129,7 +124,7 @@ fun Routing.authorizationRoutes(
                         data = Unit,
                         status = true,
                         messageCode = ApiResponseMessageCode.OK,
-                        message = "logged in. Please register the session."
+                        message = "Logged in. Please register the session."
                     )
                 )
             } else {
@@ -138,7 +133,7 @@ fun Routing.authorizationRoutes(
                         data = Unit,
                         status = false,
                         messageCode = ApiResponseMessageCode.CODE_INCORRECT,
-                        message = "this code is incorrect."
+                        message = "This code is incorrect."
                     )
                 )
             }
@@ -148,7 +143,7 @@ fun Routing.authorizationRoutes(
                     data = Unit,
                     status = false,
                     messageCode = ApiResponseMessageCode.USER_NOT_FOUND,
-                    message = "user not found."
+                    message = "User not found."
                 )
             )
         } catch (e: PhoneNotFoundException) {
@@ -157,7 +152,95 @@ fun Routing.authorizationRoutes(
                     data = Unit,
                     status = false,
                     messageCode = ApiResponseMessageCode.PHONE_NOT_FOUND,
-                    message = "phone not found."
+                    message = "Phone not found. Request the code again."
+                )
+            )
+        }
+    }
+
+    post("$PATH/register-new-phone") {
+        val phone = call.receiveText().take(15)
+        val isPhoneAvailable = kotlin.runCatching {
+            clients.getClientByPhoneNumber(phone)
+        }.exceptionOrNull() is UserNotFoundException
+        if (!isPhoneAvailable) {
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.PHONE_NOT_AVAILABLE,
+                    message = "This phone number is already in use."
+                )
+            )
+            return@post
+        }
+        phoneVerificationManager.generateVerificationCode(
+            phone = phone,
+            duration = VerificationCodeDuration.LONG
+        )
+        call.respond(
+            ApiResponse(
+                data = Unit,
+                status = true,
+                messageCode = ApiResponseMessageCode.OK,
+                message = "Verification code generated."
+            )
+        )
+    }
+
+    post("$PATH/register-new-user") {
+        val newUserData = call.receiveNullable<AuthNewUserIncomingModel>() ?: kotlin.run {
+            call.respond(HttpStatusCode.BadRequest)
+            return@post
+        }
+        val formattedUserData = newUserData.copy(
+            firstName = newUserData.firstName.take(20),
+            lastName = newUserData.lastName.take(20)
+        )
+        try {
+            val isPhoneConfirmed = phoneVerificationManager.checkVerificationCode(
+                phone = formattedUserData.phone,
+                code = formattedUserData.verificationCode
+            )
+            if (!isPhoneConfirmed) {
+                call.respond(
+                    ApiResponse(
+                        data = Unit,
+                        status = false,
+                        messageCode = ApiResponseMessageCode.CODE_INCORRECT
+                    )
+                )
+                return@post
+            }
+            val personInfo = persons.addPerson(
+                firstName = formattedUserData.firstName,
+                lastName = formattedUserData.lastName
+            )
+            val clientInfo = clients.addClient(
+                personId = personInfo.id,
+                phoneString = formattedUserData.phone
+            )
+            call.sessions.set(
+                AuthSession(
+                    personId = personInfo.id,
+                    clientId = clientInfo.id
+                )
+            )
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = true,
+                    messageCode = ApiResponseMessageCode.OK,
+                    message = "User registered. Please register the session."
+                )
+            )
+        } catch (e: PhoneNotFoundException) {
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.PHONE_NOT_FOUND,
+                    message = "Phone not found. Request the code again."
                 )
             )
         }
@@ -175,7 +258,7 @@ fun Routing.authorizationRoutes(
 //                    data = Unit,
 //                    status = false,
 //                    messageCode = ApiResponseMessageCode.SESSION_NOT_FOUND,
-//                    message = "session not found or expired."
+//                    message = "Session not found or expired."
 //                )
 //            )
 //            return@get
@@ -186,7 +269,7 @@ fun Routing.authorizationRoutes(
 //                    data = Unit,
 //                    status = false,
 //                    messageCode = ApiResponseMessageCode.SESSION_NOT_REGISTERED,
-//                    message = "session not registered."
+//                    message = "Session not registered."
 //                )
 //            )
 //            return@get
@@ -196,7 +279,7 @@ fun Routing.authorizationRoutes(
 //                data = Unit,
 //                status = true,
 //                messageCode = ApiResponseMessageCode.OK,
-//                message = "session checked."
+//                message = "Session checked."
 //            )
 //        )
 //    }
@@ -230,7 +313,7 @@ fun Routing.authorizationRoutes(
                 ApiResponse(
                     status = true,
                     messageCode = ApiResponseMessageCode.OK,
-                    message = "session registered.",
+                    message = "Session registered.",
                     data = AuthResponseModel(
                         personId = currentSession.personId,
                         clientId = currentSession.clientId,
@@ -255,7 +338,7 @@ fun Routing.authorizationRoutes(
                     data = Unit,
                     status = true,
                     messageCode = ApiResponseMessageCode.OK,
-                    message = "logged out."
+                    message = "Logged out."
                 )
             )
         }
@@ -275,7 +358,7 @@ fun Routing.authorizationRoutes(
                     ),
                     status = true,
                     messageCode = ApiResponseMessageCode.OK,
-                    message = "saved user info retrieved."
+                    message = "Saved user info retrieved."
                 )
             )
         }

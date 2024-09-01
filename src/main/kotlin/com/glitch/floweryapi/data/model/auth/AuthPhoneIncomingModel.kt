@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AuthPhoneIncomingModel(
     val phone: String,
-    val code: String? = null
+    val code: String
 )

@@ -5,6 +5,7 @@ import com.glitch.floweryapi.data.exceptions.*
 import com.glitch.floweryapi.data.model.addresses.AddressModel
 import com.glitch.floweryapi.data.model.orders.ShoppingCartItem
 import com.glitch.floweryapi.data.model.users.ClientModel
+import com.glitch.floweryapi.domain.utils.encryptor.AESEncryptor
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
@@ -18,9 +19,10 @@ class ClientsDataSourceImpl(
     private val clients = db.getCollection<ClientModel>("Clients")
 
     override suspend fun addClient(personId: String, phoneString: String): ClientModel {
+        val encryptedPhone = AESEncryptor.encrypt(phoneString)
         val clientModel = ClientModel(
             personId = personId,
-            phoneNumber = phoneString
+            phoneNumber = encryptedPhone
         )
         clients.insertOne(clientModel)
         return clientModel
@@ -37,7 +39,8 @@ class ClientsDataSourceImpl(
     }
 
     override suspend fun getClientByPhoneNumber(phoneString: String): ClientModel {
-        val filter = Filters.eq(ClientModel::phoneNumber.name, phoneString)
+        val encryptedPhone = AESEncryptor.encrypt(phoneString)
+        val filter = Filters.eq(ClientModel::phoneNumber.name, encryptedPhone)
         return clients.find(filter).singleOrNull() ?: throw UserNotFoundException()
     }
 
