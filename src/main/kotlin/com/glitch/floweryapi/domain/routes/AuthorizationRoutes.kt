@@ -14,7 +14,6 @@ import com.glitch.floweryapi.domain.utils.ApiResponseMessageCode
 import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneNotFoundException
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneVerificationManager
-import com.glitch.floweryapi.domain.utils.phoneverification.VerificationCodeDuration
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -79,7 +78,10 @@ fun Routing.authorizationRoutes(
         }
         try {
             clients.getClientByPhoneNumber(phone)
-            phoneVerificationManager.generateVerificationCode(phone)
+            phoneVerificationManager.generateVerificationCode(
+                phone = phone,
+                isNewAccount = false
+            )
             call.respond(
                 ApiResponse(
                     data = Unit,
@@ -109,7 +111,8 @@ fun Routing.authorizationRoutes(
         try {
             val result = phoneVerificationManager.checkVerificationCode(
                 phone = loginInfo.phone,
-                code = loginInfo.code
+                code = loginInfo.code,
+                isNewAccount = false
             )
             if (result) {
                 val client = clients.getClientByPhoneNumber(loginInfo.phone)
@@ -168,7 +171,7 @@ fun Routing.authorizationRoutes(
                 ApiResponse(
                     data = Unit,
                     status = false,
-                    messageCode = ApiResponseMessageCode.PHONE_NOT_AVAILABLE,
+                    messageCode = ApiResponseMessageCode.PHONE_ALREADY_IN_USE,
                     message = "This phone number is already in use."
                 )
             )
@@ -176,7 +179,7 @@ fun Routing.authorizationRoutes(
         }
         phoneVerificationManager.generateVerificationCode(
             phone = phone,
-            duration = VerificationCodeDuration.LONG
+            isNewAccount = true
         )
         call.respond(
             ApiResponse(
@@ -200,7 +203,8 @@ fun Routing.authorizationRoutes(
         try {
             val isPhoneConfirmed = phoneVerificationManager.checkVerificationCode(
                 phone = formattedUserData.phone,
-                code = formattedUserData.verificationCode
+                code = formattedUserData.verificationCode,
+                isNewAccount = true
             )
             if (!isPhoneConfirmed) {
                 call.respond(

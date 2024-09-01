@@ -5,6 +5,9 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
 private const val TAG = "PHONE VERIFICATION MANAGER"
+private const val SHORT_CODE_DURATION = 10_000L
+private const val DEFAULT_CODE_DURATION = 300_000L
+private const val LONG_CODE_DURATION = 600_000L
 
 class PhoneVerificationManagerImpl(): PhoneVerificationManager {
 
@@ -19,50 +22,68 @@ class PhoneVerificationManagerImpl(): PhoneVerificationManager {
         return code
     }
 
+    private fun generateNewPhoneCodeString(): String {
+        var code = Random.nextLong(10_000L, 99_999L).toString()
+        while (newPhoneVerificationCodes.values.contains(code)) code = Random.nextLong(10_000L, 99_999L).toString()
+        return code
+    }
+
     private fun clearCodeJob(
         phone: String,
-        duration: VerificationCodeDuration = VerificationCodeDuration.DEFAULT
+        isNewAccount: Boolean = false
     ): Job {
         return coroutineScope.launch {
-            delay(duration.delay)
-            verificationCodes.remove(phone)
+            val delay = if (isNewAccount) LONG_CODE_DURATION else DEFAULT_CODE_DURATION
+            delay(delay)
+            if (isNewAccount) {
+                newPhoneVerificationCodes.remove(phone)
+            } else {
+                verificationCodes.remove(phone)
+            }
             clearCodesJobs.remove(phone)
-            println("$TAG - code deleted")
-            println("$TAG - codes - ${verificationCodes.keys().toList()}")
-            println("$TAG - jobs - ${clearCodesJobs.keys().toList()}")
+            println("$TAG - code for $phone is deleted")
         }
     }
 
-    override fun generateVerificationCode(phone: String, duration: VerificationCodeDuration): String {
+    override fun generateVerificationCode(phone: String, isNewAccount: Boolean): String {
         val code = generateCodeString()
-        if (verificationCodes.keys().toList().contains(phone)) {
-            clearCodesJobs[phone]?.cancel() ?: println("$TAG - unable to cancel clear job for $phone")
-            clearCodesJobs.remove(phone)
+        if (isNewAccount) {
+            if (newPhoneVerificationCodes.contains(key = phone)) {
+                clearCodesJobs[phone]?.cancel()
+                clearCodesJobs.remove(phone)
+            }
+            newPhoneVerificationCodes[phone] = code
+        } else {
+            if (verificationCodes.contains(key = phone)) {
+                clearCodesJobs[phone]?.cancel()
+                clearCodesJobs.remove(phone)
+            }
+            verificationCodes[phone] = code
         }
-        val clearKeyJob = clearCodeJob(phone)
-        verificationCodes[phone] = code
+        val clearKeyJob = clearCodeJob(phone, isNewAccount)
         clearCodesJobs[phone] = clearKeyJob
         println("$TAG - new code $code registered")
         return code
     }
 
-    override fun checkVerificationCode(phone: String, code: String): Boolean {
-        val verificationCode = verificationCodes.getOrElse(phone) {
-            throw PhoneNotFoundException()
+    override fun checkVerificationCode(phone: String, code: String, isNewAccount: Boolean): Boolean {
+        val verificationCode = if (isNewAccount) {
+            newPhoneVerificationCodes.getOrElse(phone) {
+                throw PhoneNotFoundException()
+            }
+        } else {
+            verificationCodes.getOrElse(phone) {
+                throw PhoneNotFoundException()
+            }
         }
         return if (verificationCode == code) {
-            verificationCodes.remove(phone)
+            if (isNewAccount) newPhoneVerificationCodes.remove(phone)
+            else verificationCodes.remove(phone)
             clearCodesJobs[phone]?.cancel()
             clearCodesJobs.remove(phone)
             true
         } else false
     }
 
-}
-
-enum class VerificationCodeDuration(val delay: Long) {
-    SHORT(10_000L), // 10 seconds
-    DEFAULT(300_000L), // 5 minutes
-    LONG(600_000L) // 10 minutes
 }
 

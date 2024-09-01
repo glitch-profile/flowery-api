@@ -4,9 +4,13 @@ interface PhoneVerificationManager {
 
     fun generateVerificationCode(
         phone: String,
-        duration: VerificationCodeDuration = VerificationCodeDuration.DEFAULT
+        isNewAccount: Boolean
     ): String
 
-    fun checkVerificationCode(phone: String, code: String): Boolean
+    fun checkVerificationCode(
+        phone: String,
+        code: String,
+        isNewAccount: Boolean
+    ): Boolean
 
 }

@@ -10,7 +10,7 @@ enum class ApiResponseMessageCode {
     //login errors
     AUTH_DATA_INCORRECT,
     PHONE_NOT_FOUND,
-    PHONE_NOT_AVAILABLE,
+    PHONE_ALREADY_IN_USE,
     PHONE_INCORRECT,
     CODE_INCORRECT,
 
