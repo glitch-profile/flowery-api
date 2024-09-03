@@ -54,11 +54,13 @@ fun Routing.authorizationRoutes(
                 )
             )
         } catch (e: UserNotFoundException) {
-            ApiResponse(
-                data = Unit,
-                status = false,
-                messageCode = ApiResponseMessageCode.AUTH_DATA_INCORRECT,
-                message = "User with that login and password is not found."
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.AUTH_DATA_INCORRECT,
+                    message = "User with that login and password is not found."
+                )
             )
         }
     }
@@ -95,7 +97,7 @@ fun Routing.authorizationRoutes(
                 ApiResponse(
                     data = Unit,
                     status = false,
-                    messageCode = ApiResponseMessageCode.USER_NOT_FOUND,
+                    messageCode = ApiResponseMessageCode.AUTH_DATA_INCORRECT,
                     message = "User not found."
                 )
             )
@@ -120,28 +122,13 @@ fun Routing.authorizationRoutes(
             return@post
         }
         try {
-            val result = phoneVerificationManager.checkVerificationCode(
+            val client = clients.getClientByPhoneNumber(loginInfo.phone)
+            val isPhoneConfirmed = phoneVerificationManager.checkVerificationCode(
                 phone = loginInfo.phone,
                 code = loginInfo.code,
                 isNewAccount = false
             )
-            if (result) {
-                val client = clients.getClientByPhoneNumber(loginInfo.phone)
-                call.sessions.set(
-                    AuthSession(
-                        personId = client.personId,
-                        clientId = client.id
-                    )
-                )
-                call.respond(
-                    ApiResponse(
-                        data = Unit,
-                        status = true,
-                        messageCode = ApiResponseMessageCode.OK,
-                        message = "Logged in. Please register the session."
-                    )
-                )
-            } else {
+            if (!isPhoneConfirmed) {
                 call.respond(
                     ApiResponse(
                         data = Unit,
@@ -151,12 +138,26 @@ fun Routing.authorizationRoutes(
                     )
                 )
             }
+            call.sessions.set(
+                AuthSession(
+                    personId = client.personId,
+                    clientId = client.id
+                )
+            )
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = true,
+                    messageCode = ApiResponseMessageCode.OK,
+                    message = "Logged in. Please register the session."
+                )
+            )
         } catch (e: UserNotFoundException) {
             call.respond(
                 ApiResponse(
                     data = Unit,
                     status = false,
-                    messageCode = ApiResponseMessageCode.USER_NOT_FOUND,
+                    messageCode = ApiResponseMessageCode.AUTH_DATA_INCORRECT,
                     message = "User not found."
                 )
             )
@@ -225,6 +226,20 @@ fun Routing.authorizationRoutes(
                     status = false,
                     messageCode = ApiResponseMessageCode.PHONE_INCORRECT,
                     message = "Incorrect phone number."
+                )
+            )
+            return@post
+        }
+        val isPhoneAvailable = kotlin.runCatching {
+            clients.getClientByPhoneNumber(newUserData.phone)
+        }.exceptionOrNull() is UserNotFoundException
+        if (!isPhoneAvailable) {
+            call.respond(
+                ApiResponse(
+                    data = Unit,
+                    status = false,
+                    messageCode = ApiResponseMessageCode.PHONE_ALREADY_IN_USE,
+                    message = "This phone number is already in use."
                 )
             )
             return@post
