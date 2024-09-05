@@ -11,7 +11,6 @@ import com.glitch.floweryapi.data.model.auth.AuthPhoneIncomingModel
 import com.glitch.floweryapi.data.model.auth.AuthResponseModel
 import com.glitch.floweryapi.domain.session.AuthSession
 import com.glitch.floweryapi.domain.utils.ApiResponseMessageCode
-import com.glitch.floweryapi.domain.utils.EmployeeRoles
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneNotFoundException
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneVerificationManager
 import io.ktor.http.*
@@ -21,7 +20,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
-import kotlinx.coroutines.launch
 
 private const val PATH = "/apiV1/auth"
 
@@ -345,94 +343,74 @@ fun Routing.authorizationRoutes(
 //        )
 //    }
 
+    get("$PATH/update-auth-info") {
+        val currentSession = call.sessions.get<AuthSession>() ?: kotlin.run {
+            call.respond(
+                ApiResponse(
+                    data = null,
+                    status = false,
+                    message = "Session not found. Please login again.",
+                    messageCode = ApiResponseMessageCode.SESSION_NOT_FOUND
+                )
+            )
+            return@get
+        }
+        call.respond(
+            ApiResponse(
+                data = AuthResponseModel(
+                    personId = currentSession.personId,
+                    clientId = currentSession.clientId,
+                    employeeId = currentSession.employeeId,
+                    employeeRoles = currentSession.employeeRoles.map { it.name }
+                ),
+                status = true,
+                messageCode = ApiResponseMessageCode.OK,
+                message = "Saved user info retrieved."
+            )
+        )
+    }
+
+    post("$PATH/logout") {
+        val currentSessionId = call.sessionId<AuthSession>() ?: return@post
+        val currentSession = call.sessions.get<AuthSession>() ?: return@post
+        if (currentSession.clientId != null || currentSession.employeeId != null) {
+            persons.removeActiveSessionId(currentSession.personId, currentSessionId)
+        }
+        call.sessions.clear<AuthSession>()
+    }
+
     authenticate {
 
-        post("$PATH/session-verification") {
-            val currentSession = call.sessions.get<AuthSession>() ?: kotlin.run {
-//                call.respond(
-//                    ApiResponse(
-//                        status = false,
-//                        message = "unable to get session. Please login again.",
-//                        messageCode = ApiResponseMessageCode.SESSION_NOT_FOUND,
-//                        data = Unit
+//        post("$PATH/session-verification") {
+//            val currentSession = call.sessions.get<AuthSession>() ?: kotlin.run {
+//                call.respond(HttpStatusCode.Unauthorized)
+//                return@post
+//            }
+//            val sessionId = call.sessionId<AuthSession>()!!
+//            launch { persons.addActiveSessionId(currentSession.personId, sessionId) }
+//            var newSessionData = currentSession.copy(isRegistered = true)
+//            if (currentSession.employeeId != null) {
+//                try {
+//                    val employee = employees.getEmployeeById(currentSession.employeeId)
+//                    newSessionData = newSessionData.copy(employeeRoles = employee.roles.map { EmployeeRoles.valueOf(it) })
+//                } catch (_: UserNotFoundException) {  }
+//            }
+//            call.sessions.set(newSessionData)
+//            call.respond(
+//                ApiResponse(
+//                    status = true,
+//                    messageCode = ApiResponseMessageCode.OK,
+//                    message = "Session registered.",
+//                    data = AuthResponseModel(
+//                        personId = currentSession.personId,
+//                        clientId = currentSession.clientId,
+//                        employeeId = currentSession.employeeId,
+//                        employeeRoles = currentSession.employeeRoles.map { it.name }
 //                    )
 //                )
-                call.respond(HttpStatusCode.Unauthorized)
-                return@post
-            }
-            val sessionId = call.sessionId<AuthSession>()!!
-            launch { persons.addActiveSessionId(currentSession.personId, sessionId) }
-            var newSessionData = currentSession.copy(isRegistered = true)
-            if (currentSession.employeeId != null) {
-                try {
-                    val employee = employees.getEmployeeById(currentSession.employeeId)
-                    newSessionData = newSessionData.copy(employeeRoles = employee.roles.map { EmployeeRoles.valueOf(it) })
-                } catch (_: UserNotFoundException) {  }
-            }
-            call.sessions.set(newSessionData)
-            call.respond(
-                ApiResponse(
-                    status = true,
-                    messageCode = ApiResponseMessageCode.OK,
-                    message = "Session registered.",
-                    data = AuthResponseModel(
-                        personId = currentSession.personId,
-                        clientId = currentSession.clientId,
-                        employeeId = currentSession.employeeId,
-                        employeeRoles = currentSession.employeeRoles.map { it.name }
-                    )
-                )
-            )
-        }
-
-        post("$PATH/logout") {
-            val currentSession = call.sessions.get<AuthSession>()!!
-            val currentSessionId = call.sessionId<AuthSession>()!!
-            if (currentSession.clientId != null || currentSession.employeeId != null) {
-                launch {
-                    persons.removeActiveSessionId(currentSession.personId, currentSessionId)
-                }
-            }
-            call.sessions.clear<AuthSession>()
-            call.respond(
-                ApiResponse(
-                    data = Unit,
-                    status = true,
-                    messageCode = ApiResponseMessageCode.OK,
-                    message = "Logged out."
-                )
-            )
-        }
-    }
-
-    authenticate("client", "employee") {
-
-        get("$PATH/update-auth-info") {
-            val currentSession = call.sessions.get<AuthSession>()!!
-            call.respond(
-                ApiResponse(
-                    data = AuthResponseModel(
-                        personId = currentSession.personId,
-                        clientId = currentSession.clientId,
-                        employeeId = currentSession.employeeId,
-                        employeeRoles = currentSession.employeeRoles.map { it.name }
-                    ),
-                    status = true,
-                    messageCode = ApiResponseMessageCode.OK,
-                    message = "Saved user info retrieved."
-                )
-            )
-        }
-
-    }
-//    get("$PATH/test") {
-//        val sessionId = generateSessionId()
-//        call.sessions.set(
-//            value = AuthSession(
-//                personId = "0"
 //            )
-//        )
-//        call.respondText(sessionId)
-//    }
+//        }
+
+    }
 
 }
