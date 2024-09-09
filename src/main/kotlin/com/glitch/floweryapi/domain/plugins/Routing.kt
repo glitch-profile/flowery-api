@@ -6,14 +6,20 @@ import com.glitch.floweryapi.data.datasource.PersonsDataSource
 import com.glitch.floweryapi.domain.routes.authorizationRoutes
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneVerificationManager
 import io.ktor.server.application.*
+import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
+import java.io.File
 
 fun Application.configureRouting() {
 
     routing {
 
-        //users datasource
+        staticFiles(
+            remotePath = "/static",
+            File("resources")
+        ) // for files. Accessible via URL/static/...
+
         val personsDataSource by inject<PersonsDataSource>()
         val clientsDataSource by inject<ClientsDataSource>()
         val employeesDataSource by inject<EmployeesDataSource>()
