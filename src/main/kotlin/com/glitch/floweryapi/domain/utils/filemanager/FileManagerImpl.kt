@@ -1,11 +1,12 @@
 package com.glitch.floweryapi.domain.utils.filemanager
 
+import io.ktor.server.config.*
 import java.io.File
 import kotlin.io.path.Path
 
-class FileManagerImpl(
-    private val baseUrl: String
-): FileManager {
+class FileManagerImpl: FileManager {
+
+    private val baseUrl = ApplicationConfig(null).tryGetString("storage.base_url")!!
 
     override fun uploadFile(fileName: String, byteArray: ByteArray): String {
         val directory = when (File(fileName).type()) {
