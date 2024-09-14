@@ -1,6 +1,6 @@
 package com.glitch.floweryapi.data.datasourceimpl.users
 
-import com.glitch.floweryapi.data.datasource.PersonsDataSource
+import com.glitch.floweryapi.data.datasource.users.PersonsDataSource
 import com.glitch.floweryapi.data.exceptions.UserNotFoundException
 import com.glitch.floweryapi.data.model.users.PersonModel
 import com.glitch.floweryapi.domain.utils.notificationmanager.NotificationTopic

@@ -1,7 +1,7 @@
 package com.glitch.floweryapi.data.datasourceimpl.users
 
-import com.glitch.floweryapi.data.datasource.EmployeesDataSource
-import com.glitch.floweryapi.data.datasource.PersonsDataSource
+import com.glitch.floweryapi.data.datasource.users.EmployeesDataSource
+import com.glitch.floweryapi.data.datasource.users.PersonsDataSource
 import com.glitch.floweryapi.data.exceptions.UserNotFoundException
 import com.glitch.floweryapi.data.model.users.EmployeeModel
 import com.glitch.floweryapi.domain.session.AuthSession

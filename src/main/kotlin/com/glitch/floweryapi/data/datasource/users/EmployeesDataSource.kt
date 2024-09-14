@@ -1,4 +1,4 @@
-package com.glitch.floweryapi.data.datasource
+package com.glitch.floweryapi.data.datasource.users
 
 import com.glitch.floweryapi.data.model.users.EmployeeModel
 import com.glitch.floweryapi.domain.utils.EmployeeRoles

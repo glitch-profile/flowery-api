@@ -1,8 +1,8 @@
 package com.glitch.floweryapi.domain.plugins
 
-import com.glitch.floweryapi.data.datasource.ClientsDataSource
-import com.glitch.floweryapi.data.datasource.EmployeesDataSource
-import com.glitch.floweryapi.data.datasource.PersonsDataSource
+import com.glitch.floweryapi.data.datasource.users.ClientsDataSource
+import com.glitch.floweryapi.data.datasource.users.EmployeesDataSource
+import com.glitch.floweryapi.data.datasource.users.PersonsDataSource
 import com.glitch.floweryapi.domain.routes.authorizationRoutes
 import com.glitch.floweryapi.domain.utils.phoneverification.PhoneVerificationManager
 import io.ktor.server.application.*

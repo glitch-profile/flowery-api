@@ -1,8 +1,8 @@
 package com.glitch.floweryapi.domain.routes
 
-import com.glitch.floweryapi.data.datasource.ClientsDataSource
-import com.glitch.floweryapi.data.datasource.EmployeesDataSource
-import com.glitch.floweryapi.data.datasource.PersonsDataSource
+import com.glitch.floweryapi.data.datasource.users.ClientsDataSource
+import com.glitch.floweryapi.data.datasource.users.EmployeesDataSource
+import com.glitch.floweryapi.data.datasource.users.PersonsDataSource
 import com.glitch.floweryapi.data.exceptions.UserNotFoundException
 import com.glitch.floweryapi.data.model.ApiResponse
 import com.glitch.floweryapi.data.model.auth.AuthAdminIncomingModel

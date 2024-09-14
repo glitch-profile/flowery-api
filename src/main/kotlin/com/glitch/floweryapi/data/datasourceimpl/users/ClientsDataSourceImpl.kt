@@ -1,6 +1,6 @@
 package com.glitch.floweryapi.data.datasourceimpl.users
 
-import com.glitch.floweryapi.data.datasource.ClientsDataSource
+import com.glitch.floweryapi.data.datasource.users.ClientsDataSource
 import com.glitch.floweryapi.data.exceptions.*
 import com.glitch.floweryapi.data.model.addresses.AddressModel
 import com.glitch.floweryapi.data.model.orders.ShoppingCartItem
