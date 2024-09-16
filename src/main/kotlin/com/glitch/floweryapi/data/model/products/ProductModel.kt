@@ -9,9 +9,11 @@ data class ProductModel(
     val id: String = ObjectId().toString(),
     val name: String,
     val description: String,
-    val category: String,
+    val categoryId: String,
     val isAvailable: Boolean = true,
     val price: Float,
     val specialPrice: Float? = null,
-    val images: List<ImageModel>
+    val images: List<ImageModel>,
+    val ratingsCount: Int = 0,
+    val ratingsSum: Int = 0,
 )
