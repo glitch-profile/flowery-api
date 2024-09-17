@@ -32,7 +32,7 @@ interface ProductsDataSource {
         categoryId: String,
         price: Float,
         images: List<ImageModel>,
-        specialPrice: Int? = null,
+        specialPrice: Float? = null,
         isAvailable: Boolean = true
     ): ProductModel
 
